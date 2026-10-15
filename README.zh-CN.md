@@ -375,6 +375,7 @@ export APKREV_TOOLS=<dir>:<dir>                  # POSIX
 | Python 3.9+ | 所有脚本 |
 | **`droidasc`**（ASC）（**可选，但强烈建议——先装这个**） | 整 APK 交叉引用索引：`findrefs` / `listclass` / `getclass` / `getmanifest`。一句 `pip install droidasc`，无 JVM、无 SDK、无需建索引。把「这几千个类里哪一个提到过这个字符串」变成亚秒级查询，也是找到名字被 R8 混淆过的类的唯一路线。**这是 agent 在做任何完整反编译之前应当伸手去拿的工具** —— 见 `skills/apk-reverse/references/toolchain.md` §droidasc (ASC) —— 一次查询就能问一个 APK「谁引用了这个？」 |
 | `ddc`（可选，但强烈建议） | 单文件 dex→Java 反编译器，带查询子命令（`info`、`findrefs`、`strings --with-locations`、按类反编译）。无 JVM。**读** ASC 所**定位**的东西；也能可靠地报告包身份 —— 见 `skills/apk-reverse/references/toolchain.md` §ddc —— 带查询子命令的 dex 转 Java（值得采用） |
+| **`dexsql`**（可选，但强烈建议） | 单文件，**用 SQL 查询整个 dex**，外加 APK manifest 与 `resources.arsc`，并内置 MCP server。它的类定义集合在四个归档上与 `rasc`/`droidasc`/`ddc` 完全一致，而且能回答另两个表达不了的问题：某被调方法的调用者、字段访问、数值常量、调试行表、注解、hiddenapi 标志。当问题是**连接或聚合**时用它 —— 见 `skills/apk-reverse/references/dexsql-sql-query-layer.md` |
 | `baksmali` / `smali` + `dexlib2` jars | 反汇编、汇编、外科式打补丁 |
 | JDK（`javac`、`java`） | 构建/运行 dexlib2 补丁器；同时提供 `keytool`/`jarsigner` |
 | Android SDK build-tools（`aapt`、`zipalign`、`apksigner`） | manifest 信息、对齐、签名。**`apksigner` 才是该用的签名器** —— `jarsigner` 会重写归档并破坏 Android R+ 所要求的对齐 |

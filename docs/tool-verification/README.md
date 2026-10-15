@@ -87,6 +87,7 @@ written down.
 | `EXTENSION-desensitization.md` | The leak scanner's rules and exemptions, its four `RESULT=` states and exit codes, the escaping false positives, and **the pass that found its own evidence file leaking 26 strong hits** — the fixture's literal match values, quoted to prove the rules fire |
 | `EXTENSION-dart-aot-formats.md` | Two string-table claims tested against a real dual-ABI Flutter app: the arm64 packed scheme confirmed against literal tag bytes, and the assumed armv7 `len*2`/UTF-16 form **refuted** — the 32-bit record is `[header u32][byte-count u32le][UTF-8]`, and the extractor's zero is a format mismatch rather than an empty table |
 | `EXTENSION-detection-pipeline.md` | Naming the check that fires: three arms on a public MASTG target (control alive, probe arm dead in ≈300 ms via `strstr("frida")`, with the `TracerPid=0` versus 4-frida-mappings asymmetry), `svc_scan.py`'s two decoders agreeing on an identical 214-site set, the layered Java-to-svc descent, and the ptrace-free dump boundary on targets whose dex is deflated inside the APK |
+| `EXTENSION-dexsql.md` | The SQL query layer adopted as a **third indexer** beside rasc/droidasc/ddc: identical class-definition sets on four archives (zero differences either way), the string xref agreement and the `=` versus `LIKE` match-semantics trap, `decode` against `ddc disasm` line for line, and the persistent cache measured as **not** a speed switch |
 
 ## Adding a run
 

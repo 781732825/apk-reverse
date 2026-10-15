@@ -415,6 +415,23 @@
       "evidence": ["references/server-api.md", "references/handoff-boundaries.md"],
       "evidence_not_shipped": ["docs/tool-verification/README.md (repository root, not shipped)"],
       "limits": "Determining who owns a gate is covered; breaking an authorization the server performs is not. There is no client-side patch that reaches it, and the honest deliverable is the residual: which authority decides, and why the artifact cannot change it."
+    },
+    {
+      "capability": "dex-sql-query-layer-dexsql",
+      "group": "dex",
+      "status": "ok",
+      "route_measured": true,
+      "strength": "observed",
+      "benchmark_rows": [],
+      "evidence": [
+        "references/dexsql-sql-query-layer.md",
+        "references/toolchain.md",
+        "scripts/capabilities.py"
+      ],
+      "evidence_not_shipped": [
+        "docs/tool-verification/EXTENSION-dexsql.md (repository root, not shipped)"
+      ],
+      "limits": "Measured on dexsql v0.1.0, Windows amd64 release asset only; no other version or platform was exercised. Class-definition sets were identical to rasc, droidasc and ddc on four archives (1,396 / 647 / 4 / 30,768 classes, zero differences either way), and a string cross-reference query reproduced ASC's hits site for site on one archive. Three boundaries are load-bearing: `decode` emits smali rather than Java, SQL `=` is not `findrefs` (ASC matches a substring, so `LIKE` is the equivalent), and the persistent cache is not a speed switch (under 20% on a 34.8 MB archive, a net loss on a small one). The MCP server was exercised to a tool listing and a resource-model inventory, not end to end from a client."
     }
   ]
 }

@@ -32,6 +32,15 @@ but nobody here has paid for the counters yet.
 - **dex-level surgical patching**: equal-length byte edits and dexlib2 method rewrites, plus the
   header, verifier and alignment rules that decide whether the build loads (`dex-patching.md`,
   `byte-level-patching.md`, `patch-audit.md`).
+- **Whole-APK dex indexing and query — locating a class or a reference before reading code.** Three
+  indexers ship as documented routes (`rasc`, `droidasc`, `dexsql`) and their class-definition sets
+  were compared against each other and against `ddc` on four archives (1,396 / 647 / 4 / 30,768
+  classes): **identical on all four, zero differences in either direction**, and a string
+  cross-reference query agreed site for site. `dexsql` additionally exposes the dex as SQL — callers,
+  field accesses, numeric constants, debug lines, annotations, hiddenapi flags — plus the APK
+  resources and an MCP server (`rasc-and-droidsaw.md`, `dexsql-sql-query-layer.md`). **Boundary:** on a
+  hardened target all four return the same small class count because the payload is encrypted inside a
+  shell; no query language reaches that, and the unpacking routes own it.
 - **Repacking, signing, installing**, and the install refusals that look like a broken build
   (`repack-and-sign.md`).
 - **Packers, custom loaders and code virtualization**: identifying them, measuring the validation

@@ -18,6 +18,7 @@ the evidence record condensed in `references/evidence-summary.md` §Where the fu
 | Client-side ads, promos, splash/popup/tab config | includes server-issued UI config that has no SDK to find | `ad-removal.md`, `server-config-and-updates.md` |
 | Membership / paywall / feature gates | decide whether it is *client-enforceable* at all, and say so when it is not | `membership-and-limits.md`, `account-gates.md` |
 | dex-level surgical patching | equal-length byte edits, dexlib2 method rewrite, header/verifier/alignment rules | `dex-patching.md`, `byte-level-patching.md`, `patch-audit.md` |
+| Whole-APK dex indexing and query | locate classes and references **before** reading code: `rasc`/`droidasc` for `findrefs`, `dexsql` for SQL joins and aggregates (callers, field accesses, numeric constants, debug lines, annotations) — all four indexers cross-checked for identical class-definition sets on four archives | `rasc-and-droidsaw.md`, `dexsql-sql-query-layer.md` |
 | Repack, sign, install | including the install refusals that look like a broken build | `repack-and-sign.md` |
 | Packers, custom loaders, code virtualization | identification, the validation boundary, the routes that survive it | `packers.md`, `code-virtualization-and-custom-linkers.md` |
 | Java2C vs extraction shell vs JNI sinking | the misdiagnosis that sends you hunting a decrypted DEX that never exists | `java2c-and-jni-sinking.md`, `scripts/java2c_probe.py` |
