@@ -89,6 +89,19 @@ written down.
 | `EXTENSION-detection-pipeline.md` | Naming the check that fires: three arms on a public MASTG target (control alive, probe arm dead in ≈300 ms via `strstr("frida")`, with the `TracerPid=0` versus 4-frida-mappings asymmetry), `svc_scan.py`'s two decoders agreeing on an identical 214-site set, the layered Java-to-svc descent, and the ptrace-free dump boundary on targets whose dex is deflated inside the APK |
 | `EXTENSION-dexsql.md` | The SQL query layer adopted as a **third indexer** beside rasc/droidasc/ddc: identical class-definition sets on four archives (zero differences either way), the string xref agreement and the `=` versus `LIKE` match-semantics trap, `decode` against `ddc disasm` line for line, and the persistent cache measured as **not** a speed switch |
 
+## Hardware-layer pass record
+
+The hardware pass (hardware watchpoints, ETE differential tracing, kernel-side event injection)
+follows the same shape: what runs on a host is measured, and everything that needs a device or a
+kernel toolchain is an explicitly-labelled template whose gate says where it closes.
+
+| File | Covers |
+|---|---|
+| `EXTENSION-hw-watchpoints.md` | The ptrace hardware-watchpoint route: encoders accepted and refused exactly as the alignment rules demand, and the emitted on-device helper **compiled clean as a static aarch64 ELF** — while no watchpoint was armed on any device, and the ledger that says the ptrace route leaves `TracerPid` visible |
+| `EXTENSION-ete-diff.md` | The differential half measured on synthetic flattened-dispatcher fixtures (first divergence, unique-per-side sets), the gate/capture plumbing measured to the no-device boundary, and what was deliberately not done: no perf-with-CORESIGHT build, no cs_etm stream, no overhead claim |
+| `EXTENSION-kernel-instrument.md` | The kernel-side scaffold's generate/verify round trip, the spec-refusal rules shared with `hw_watch.py`, the capability map whose `no` cells do the gatekeeping, and the three-time-fenced experimental register-rewrite action |
+| `EXTENSION-sampling-crash.md` | The second hardware pass: `trace_addr2sym.py` verified against a real cross-compiled `.so` (readelf-cross-checked), the interpreter-trace slicer measured on the calibrated xvmp shape (including the 4x-margin bug it found in itself), and the flattening-recipe corrections read from the two public obfuscator implementations the user supplied |
+
 ## Adding a run
 
 Record the tools, versions and exact commands, and label each claim. Keep target-specific facts out:

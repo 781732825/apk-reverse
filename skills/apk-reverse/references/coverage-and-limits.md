@@ -104,6 +104,25 @@ its own strength note at the top.
 - **What to do when userspace hooking provably cannot reach the check** — raw `svc` syscalls,
   `init_array`-early detection, and the kernel-route map with its version gate
   (`kernel-and-environment-hardening.md`).
+- **Hardware watchpoints (ptrace route)** — observing who reads/writes one location with zero
+  code modification, its honest `TracerPid` ledger, and the control run every hit is owed.
+  Encoders and the on-device helper's build are host-measured; arming on a device is not
+  (`hardware-watchpoints.md`, `scripts/hw_watch.py`).
+- **ETE differential tracing** — the five gates and how each fails silently, per-thread `cs_etm`
+  capture, and the one-bit-different pair design that turns two traces into the input-dependent
+  block set. The reducer/differ is host-measured; the producer side needs a coresight device this
+  repository never had (`ete-diff-tracing.md`, `scripts/ete_capture.py`, `scripts/trace_diff.py`).
+- **SPE/BRBE sampling and crash forensics** — data flow without a known address, branch records
+  when a crash's stack cannot be trusted, and the address→symbol loop. The ELF symbolizer is
+  host-verified; no SPE sample or BRBE record was ever captured here
+  (`hardware-sampling-and-crash.md`, `scripts/trace_addr2sym.py`).
+- **Interpreter-trace de-virtualization** — dispatcher slicing, handler-signature clustering and
+  the guest-opcode trajectory, host-tested on synthetic interpreter traces and calibrated
+  against a public IR virtualizer's source; no hardened binary was ever traced
+  (`scripts/vm_handler_slice.py`).
+- **Kernel-side event injection** — invisible watchpoints and register rewrites from a driver, as
+  generated templates with their gates; nothing kernel-side was ever compiled or loaded here
+  (`kernel-event-injection.md`, `scripts/kernel_instrument_scaffold.py`).
 - **Working from the phone itself** — MT Manager, its APK MCP surface, LSPosed Manager, on-device
   data inspection (`on-device-tooling.md`, `scripts/mt_mcp_probe.py`).
 
