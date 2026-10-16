@@ -288,6 +288,12 @@ references/               loaded on demand, one topic each
                               branch records / the ETE tail), and runtime addresses turned into
                               symbols and static offsets (`trace_addr2sym.py`, PIE vaddr/file-offset
                               rules)
+  native-vm-recovery.md       recovering a native VM: existence signals, the behavioural table
+                              that separates stacked CFF/VM dispatchers, relocation-recovered
+                              dispatch tables, register anchoring with triple verification,
+                              nested-VM segment stacks, STORE-backward operand slicing with byte
+                              provenance, and the clean-re-VM validation loop — absorbed from two
+                              public write-ups
   kernel-event-injection.md   the driver as your hands inside the target: watchpoints armed from the
                               kernel with no tracer relationship, register rewrites at the trap, the
                               primitive map per route (KPM/LKM/eBPF/Zygisk), and the composition
@@ -439,7 +445,8 @@ scripts/                  parameterized, path-agnostic
   vm_handler_slice.py         de-virtualize an interpreter trace: dispatcher detection, slicing
                               into handler segments at dispatch entries, signature clustering, and
                               the guest-opcode trajectory via an optional handler->opcode map —
-                              calibrated against the open xvmp IR virtualizer
+                              calibrated against the open xvmp IR virtualizer, with a nested-loop
+                              diagnostic for VMs called from VM code
   rasc_build.py               build and verify rasc, the Rust ASC re-implementation:
                               --check what is present, --build clone plus cargo, --verify an APK
                               against droidasc and fail on any class-set difference

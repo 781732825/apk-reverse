@@ -43,6 +43,17 @@ mechanism's truth. It means nobody has yet put a command and its output behind i
   captured, no BRBE record read, and no kernel file compiled or loaded on any device by this
   repository**. Every device-side step carries its control procedure in the reference file, and a
   control that has not run means the result is `unverified`, not working-as-intended.
+- **The public xvmp tree ships the compiler half only; this skill supplied the missing runtime.**
+  Upstream never compiled its virtualizer headers (no TU includes them; on dev trees they do not
+  build), and the `vm_exec` interpreter was never committed. The completed implementation — pass
+  wiring (`-mllvm -irobf-irvm`, section `.irvm`; strictly flag-gated), FORMAT v3 bytecode
+  (explicit widths, stable CC_ cast kinds, per-index GEP scales), a strong-symbol `vm_exec`
+  interpreter, VMP.h user header and a 23-check unit suite — is merged into all four `omp`
+  branches of that tree and verified end-to-end: virtualized vs native output identical at
+  -O0/-O1/-O2 on every branch. (One branch also carried an ungated IRVM call in
+  `Obfuscation::runOnModule` that rewrote `.irvm` functions in plain native builds; removed, so
+  IRVM runs only behind `-mllvm -irobf-irvm`.) Read stderr for `[irvm] skip` lines before
+  assuming a function was virtualized.
 - **The evidence record and the benchmark matrix do not ship.** Their paths appear in older
   documents as if they were openable files. They resolve only in the repository they were written in.
 

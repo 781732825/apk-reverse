@@ -120,6 +120,10 @@ its own strength note at the top.
   the guest-opcode trajectory, host-tested on synthetic interpreter traces and calibrated
   against a public IR virtualizer's source; no hardened binary was ever traced
   (`scripts/vm_handler_slice.py`).
+- **Native VM recovery procedure** — the full method (dispatcher-layer separation, register
+  anchoring with triple verification, nested segment stacks, STORE-backward slicing, clean-re-VM
+  validation) absorbed from two public write-ups; every step `inferred`, none run here
+  (`native-vm-recovery.md`).
 - **Kernel-side event injection** — invisible watchpoints and register rewrites from a driver, as
   generated templates with their gates; nothing kernel-side was ever compiled or loaded here
   (`kernel-event-injection.md`, `scripts/kernel_instrument_scaffold.py`).

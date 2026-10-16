@@ -165,3 +165,96 @@ class TestCli:
                                                "--opcode-map", str(mp)])
         assert r.returncode == 0
         assert "unmapped handler blocks" in r.output
+
+
+class TestNestedLoopDiagnostic:
+    """A block repeating inside ONE segment is a second dispatcher under the
+    first (a VM entered from VM code) -- the absorbed write-up measured 45-of-46
+    entries nested, 57-1997 instructions lost per nesting under a flat slice."""
+
+    def _nested_log(self, tmp_path):
+        H = {"D": 0x1000, "h": 0x2000, "i": 0x3000, "j": 0x4000}
+        seq = "D h D h D " + " ".join(["i"] * 6 + ["j"] + ["i"] * 6) + " D h D h"
+        p = tmp_path / "nested.log"
+        p.write_text("\n".join("BLK %d libvm.so+0x%x" % (i, H[k])
+                               for i, k in enumerate(seq.split())) + "\n",
+                     encoding="utf-8")
+        return p
+
+    def test_nested_segment_flagged_with_explicit_outer_dispatcher(self, tmp_path):
+        r = run_script("vm_handler_slice.py", ["--log", str(self._nested_log(tmp_path)),
+                                               "--dispatcher", "libvm.so+0x1000"])
+        assert r.returncode == 0, r.output
+        assert "nested dispatch loop" in r.output
+        assert "native-vm-recovery.md" in r.output
+
+    def test_short_segments_do_not_trigger(self, vm_log):
+        r = run_script("vm_handler_slice.py", ["--log", str(vm_log)])
+        assert r.returncode == 0
+        assert "nested dispatch loop" not in r.output
+
+    def test_nested_helper_shape(self):
+        segs = [(["a"] * 6 + ["b"] + ["a"] * 6, True), (["c"], True)]
+        assert vs.nested_loop_segments(segs) == [0]
+        assert vs.nested_loop_segments([(["a", "b", "a"], True)]) == []
+
+    def test_diagnostics_accepts_tuple_and_bare_run_segments(self):
+        """(run, closed) since the open-tail fix; a bare run still measures."""
+        d1 = vs.diagnostics(["D", "a", "D", "a"], "D", [(["a"], True)] * 2, {})
+        d2 = vs.diagnostics(["D", "a", "D", "a"], "D", [["a"]] * 2, {})
+        assert d1["avg_segment_len"] == d2["avg_segment_len"] == 1.0
+
+
+class TestSigKeyMaps:
+    """Signature-keyed opcode maps: on an instruction stream (or under an outer
+    flattening pass) segments share one entry block, so only the signature
+    distinguishes handlers. Measured on the SS6 fixture run."""
+
+    def test_sig_key_wins_when_first_blocks_collide(self, tmp_path):
+        """Two segments starting at the same block, named via signature keys."""
+        run = "D load arith D store D br D ret".split()
+        p = tmp_path / "vm2.log"
+        p.write_text("\n".join("BLK %d libvm.so+0x%x" % (i, H[k])
+                               for i, k in enumerate(run)) + "\n",
+                     encoding="utf-8")
+        blocks = vs.trace_diff.read_blocks(str(p))
+        segs, pre, tail = vs.slice_segments(blocks, "libvm.so+0x1000")
+        # both segments start right after D at 0x2000; only one exists per
+        # entry -- craft the collision by slicing at the handler block itself:
+        # segments then begin at 0x3000 / 0x4000 -- distinct. To force a true
+        # collision, slice at a block the segments share:
+        run3 = "D arith D arith store D ret".split()
+        p3 = tmp_path / "vm3.log"
+        p3.write_text("\n".join("BLK %d libvm.so+0x%x" % (i, H[k])
+                                for i, k in enumerate(run3)) + "\n",
+                      encoding="utf-8")
+        b3 = vs.trace_diff.read_blocks(str(p3))
+        segs3, _, _ = vs.slice_segments(b3, "libvm.so+0x1000")
+        # dispatcher-sliced segments here are [arith] and [arith, store]:
+        # different content, and the first segment's run == second's prefix,
+        # which is the fixture shape (shared entry prefix).
+        assert len(segs3) == 3          # two closed + the open tail
+        sig_a, sig_b = (vs.signature(r) for r, _ in segs3[:2])
+        assert sig_a != sig_b
+        mp = tmp_path / "map.json"
+        mp.write_text(json.dumps({sig_a: "ARITH_OR_SHL", sig_b: "ARITH_LATCH"}),
+                      encoding="utf-8")
+        _traj, stats = vs.cluster(segs3)
+        named, unmapped = vs.apply_map([sig_a, sig_b], stats, str(mp))
+        assert named == ["ARITH_OR_SHL", "ARITH_LATCH"]
+        assert unmapped == []
+
+    def test_first_block_key_still_supported(self, tmp_path):
+        """Legacy first-block keys keep working when no signature key matches."""
+        run = "D load arith D ret".split()
+        p = tmp_path / "vm4.log"
+        p.write_text("\n".join("BLK %d libvm.so+0x%x" % (i, H[k])
+                               for i, k in enumerate(run)) + "\n",
+                     encoding="utf-8")
+        blocks = vs.trace_diff.read_blocks(str(p))
+        segs, _, _ = vs.slice_segments(blocks, "libvm.so+0x1000")
+        _traj, stats = vs.cluster(segs)
+        mp = tmp_path / "map4.json"
+        mp.write_text(json.dumps({"libvm.so+0x2000": "OP_LOAD"}), encoding="utf-8")
+        named, unmapped = vs.apply_map([vs.signature(segs[0][0])], stats, str(mp))
+        assert named == ["OP_LOAD"] and unmapped == []

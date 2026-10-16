@@ -47,6 +47,7 @@ route was not measured on this repository's evidence**. Treat them as leads with
 | ETE differential tracing | two one-bit-different runs into the input-dependent block set; gates probed by script, producer unverified — `ete-diff-tracing.md` |
 | SPE/BRBE sampling and crash forensics | data flow without a known address, branch records past an untrustworthy stack, addresses→symbols — `hardware-sampling-and-crash.md` |
 | Interpreter-trace de-virtualization | handler slicing + guest-opcode trajectory, calibrated on an open IR-VM's source — `vm_handler_slice.py` |
+| Native VM recovery procedure | the absorbed method end to end: dispatcher separation, register anchoring, nested stacks, operand slicing, re-VM validation — `native-vm-recovery.md` |
 | Kernel-side event injection | watchpoints and register rewrites from a driver, as gated templates — `kernel-event-injection.md` |
 | Working from the phone itself | MT Manager edit/repack/sign and its APK MCP, LSPosed Manager, Termux — `on-device-tooling.md` |
 | Publishing without publishing the target | the leak scanner, the do-not-anonymize list, and the graded precedent library — `desensitization-and-leak-scans.md`, `scripts/scan_leaks.py`, `precedents/` |

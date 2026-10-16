@@ -16,12 +16,17 @@ dispatcher entries** turns it back into a program:
 With a handler->opcode map (see below), the trajectory becomes the guest program's
 opcode sequence: the disassembly of the VM you cannot read statically.
 
-Calibration source -- an open IR-level VM, in the shape this tool expects
-------------------------------------------------------------------------
-This tool's segment model is calibrated against a public LLVM-IR virtualizer
-(dpkg123/ollvm-aosp-toolchain, commits 63fec41f and 9b7cf75e, 2026-09 -- the `xvmp`
-generic pass; source facts below are read from that patch, `inferred` for runtime
-behaviour, `observed` for the source text):
+Calibration source -- an open IR-level VM's COMPILER SIDE, in the shape this tool expects
+--------------------------------------------------------------------------------------------------------
+This tool's segment model is calibrated against the public LLVM-IR virtualizer's
+*generator* (dpkg123/ollvm-aosp-toolchain, commits 63fec41f and 9b7cf75e, 2026-09 -- the
+`xvmp` pass; source facts below are read from that patch, `inferred` for runtime
+behaviour, `observed` for the source text). **Upstream shipped the compiler half only
+(no `vm_exec` interpreter; a weak empty stub, unsupported IR skipped with an `errs()`
+line)** -- this repository completed the missing runtime (pass wiring, FORMAT v3 bytecode,
+strong-symbol interpreter) as `irvm-*` branches on the workbench clone, verified
+end-to-end at -O0/-O1/-O2. Runtime facts below describe that working interpreter's
+contract. What the generator guarantees:
 
 - each virtualized function becomes a stub calling ``vm_exec(code, size, vm_args, num)``:
   the bytecode array plus a boxed-argument array live in the module, so the *inputs*
@@ -65,9 +70,15 @@ Inputs and behaviour
   VM at all (no dominant block; native-dbi-and-deobfuscation.md's "trace of a VM" note).
 
 Measured status: host-tested on synthetic interpreter traces in the calibrated shape
-(tests/unit/test_vm_handler_slice.py). No real xvmp-hardened binary was ever traced by
-this repository -- the calibration facts are from the public source, and the first run
-against a real sample is a measurement, not a confirmation.
+(tests/unit/test_vm_handler_slice.py) and end to end on a real hardened sample — an
+fco+bcfobf+subobf+IRVM build of the completed toolchain traced with a ptrace
+single-stepper (EXTENSION-sampling-crash.md SS6): 95,184 segments / 18 unique
+signatures, every handler segment of a round named by positional alignment against
+the interpreter's own step log, zero unmapped. Two field notes from that run: with an
+instruction-per-line stream `--dispatcher auto` correctly refuses (the dispatcher
+block's instructions tie in count) -- name the dispatcher explicitly; and an outer
+flattening pass makes one guest step cross the dispatcher several times, so the
+shuttle class must be separated before naming. Opcode maps key by signature first.
 
 Examples
   python vm_handler_slice.py --log vm_trace.log
@@ -147,11 +158,35 @@ def cluster(segments):
     return trajectory, stats
 
 
+def _run_of(seg):
+    """A segment is (run, closed) since the open-tail fix; accept a bare run too."""
+    return seg[0] if isinstance(seg, tuple) else seg
+
+
+def nested_loop_segments(segments):
+    """Indexes of segments that look like a nested dispatch loop: one block
+    repeating 4+ times inside a single segment. Handler chains are short and
+    repeat ACROSS segments, never within one -- a block repeating inside one
+    segment is a second dispatcher running under the first (a VM entered from
+    VM code; in the write-up that taught this, 45 of 46 entries were nested,
+    and a flat slice discarded 57-1997 instructions per nesting)."""
+    out = []
+    for i, seg in enumerate(segments):
+        run = _run_of(seg)
+        if len(run) < 8:
+            continue
+        counts = Counter(run)
+        if counts.most_common(1)[0][1] >= 4:
+            out.append(i)
+    return out
+
+
 def diagnostics(blocks, dispatcher, segments, stats):
-    """Sanity notes (spin loops, degenerate shapes)."""
+    """Sanity notes (spin loops, degenerate shapes, nested dispatch levels)."""
     n = len(blocks)
     dcount = blocks.count(dispatcher)
-    avg_len = sum(len(s) for s in segments) / len(segments) if segments else 0
+    runs = [_run_of(s) for s in segments]
+    avg_len = sum(len(r) for r in runs) / len(runs) if runs else 0
     unique_ratio = len(stats) / len(segments) if segments else 1.0
     notes = []
     if avg_len <= 1.05:
@@ -164,20 +199,35 @@ def diagnostics(blocks, dispatcher, segments, stats):
         notes.append("dispatcher is under 15%% of blocks (%d/%d): the loop does not "
                      "dominate; re-check with trace_diff.py reduce's histogram"
                      % (dcount, n))
+    nested = nested_loop_segments(segments)
+    if nested:
+        notes.append("segments %s contain a block repeating 4+ times inside one segment: "
+                     "a nested dispatch loop (a VM called from VM code). A flat slice "
+                     "corrupts nested levels -- slice per level; the segment-stack fix "
+                     "is documented in references/native-vm-recovery.md"
+                     % (",".join(str(i) for i in nested[:5])))
     return {"blocks": n, "dispatcher_hits": dcount,
             "dispatcher_share": round(dcount * 100.0 / n, 1),
             "segments": len(segments), "unique_segments": len(stats),
-            "avg_segment_len": round(avg_len, 2), "notes": notes}
+            "avg_segment_len": round(avg_len, 2),
+            "nested_loop_segments": nested, "notes": notes}
 
 
 def apply_map(trajectory, stats, map_path):
-    """Map handler keys to opcode labels; report unmapped blocks."""
+    """Map handler keys to opcode labels; report unmapped blocks.
+
+    Keys are tried as signatures first, then as the segment's first block --
+    the two coincide on block-granular traces, but on an instruction stream
+    (or under an outer flattening pass) every segment can share one entry
+    block, and only the signature distinguishes handlers. Measured on the
+    SS6 fixture run: first-block keys collided there, signatures did not.
+    """
     with open(map_path, "r", encoding="utf-8") as fh:
         table = json.load(fh)
     named, unmapped = [], []
     for sig in trajectory:
         run = stats[sig]["blocks"]
-        key = run[0]
+        key = sig if sig in table else run[0]
         if key in table:
             named.append(table[key])
         else:
@@ -254,9 +304,9 @@ def main():
     ap = argparse.ArgumentParser(
         description="Slice a VM interpreter trace into handler segments: dispatcher "
                     "detection, segment signatures, trajectory, optional handler->opcode map.",
-        epilog="Calibrated against the public xvmp IR virtualizer (vm_exec + slot machine); "
-               "references/ete-diff-tracing.md owns the capture, this tool owns the "
-               "de-virtualization half of the reading.")
+        epilog="Calibrated against the public xvmp generator's bytecode format (its runtime "
+               "interpreter is NOT in that repository); references/ete-diff-tracing.md "
+               "owns the capture, this tool owns the de-virtualization half of the reading.")
     ap.add_argument("--log", required=True, help="interpreter trace (stalker or plain)")
     ap.add_argument("--format", choices=sorted(trace_diff.PARSERS),
                     help="force a parser (default: auto, as trace_diff.py)")

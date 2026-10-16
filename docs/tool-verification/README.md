@@ -101,6 +101,7 @@ kernel toolchain is an explicitly-labelled template whose gate says where it clo
 | `EXTENSION-ete-diff.md` | The differential half measured on synthetic flattened-dispatcher fixtures (first divergence, unique-per-side sets), the gate/capture plumbing measured to the no-device boundary, and what was deliberately not done: no perf-with-CORESIGHT build, no cs_etm stream, no overhead claim |
 | `EXTENSION-kernel-instrument.md` | The kernel-side scaffold's generate/verify round trip, the spec-refusal rules shared with `hw_watch.py`, the capability map whose `no` cells do the gatekeeping, and the three-time-fenced experimental register-rewrite action |
 | `EXTENSION-sampling-crash.md` | The second hardware pass: `trace_addr2sym.py` verified against a real cross-compiled `.so` (readelf-cross-checked), the interpreter-trace slicer measured on the calibrated xvmp shape (including the 4x-margin bug it found in itself), and the flattening-recipe corrections read from the two public obfuscator implementations the user supplied |
+| `EXTENSION-absorption-kx.md` | The absorption pass over four public write-ups: the native-VM-recovery procedure (every step `inferred`), pitfalls P43–P46, the slicer's nested-loop diagnostic (with the latent `len(tuple)` bug this pass's review caught), and what deliberately did not cross over |
 
 ## Adding a run
 
