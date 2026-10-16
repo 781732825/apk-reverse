@@ -57,6 +57,17 @@ And one thing at the end that is meant to be *withheld*: **"done"** has a defini
 clean log is not one of them. Anything short of all six is a checkpoint, and should be reported as a
 checkpoint with what remains.
 
+**What the split costs is not measured, and the claim should not be overstated.** `SKILL.md` loads in
+full; a reference loads when the symptom index or `references/routing.md` sends you to one. That is
+usually described as "cheaper context", and only half of it has been measured here: the always-loaded
+body has a measured size and a gate that fails when it grows (`check_budget.py`). The other half has
+not — how many references a real question pulls in, and whether fetching them one at a time ends up
+costing more than the alternative would have. A question that needs four references is not obviously
+cheaper than one longer file would have been, and every reference also carries its own entry in the
+index that has to be read to find it. Treat the split's economy as `unknown` -- nothing here has
+measured it -- and treat the body budget as `observed`. The second is the one that compounds on every
+task, which is why it is the one gated.
+
 If you are an agent reading this: the cheapest possible first command is
 `python skills/apk-reverse/scripts/doctor.py`. It tells you which of these tools exist here, which
 scripts can actually run, and whether something in the environment is already poisoning your
