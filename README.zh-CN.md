@@ -417,6 +417,8 @@ export APKREV_TOOLS=<dir>:<dir>                  # POSIX
 
 脚本本身是纯 `python3`，并且意图在 Windows、macOS 和 Linux 上行为一致；凡有片段仅限 POSIX，都会标注出来。这里没有任何东西假定你用的是 Unix shell。
 
+**实测只在 Windows 上做过。** 每一次门禁运行、每一个测试结果、以及证据记录里的每一个数字，都来自同一台主机（Windows 10.0.26100、PowerShell 7、CPython 3.14）。跨平台行为是设计意图，不是观测结果：在别处跑通之前，把另一个平台当作 `unverified`，并预期差异出在几个老地方 —— 路径分隔符、`APKREV_TOOLS` 里的 `os.pathsep`、控制台编码，以及 ADB 辅助脚本里的 shell 引号转义。如果你在 macOS 或 Linux 上跑门禁并通过了，那是一个值得记在这段旁边的 `observed` 结果。
+
 | 工具 | 用途 |
 |---|---|
 | Python 3.9+ | 所有脚本 |

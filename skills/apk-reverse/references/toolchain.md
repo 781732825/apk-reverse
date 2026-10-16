@@ -270,6 +270,29 @@ line numbers and even which branch is which can differ from the bytecode. When a
 it, verify in smali or at runtime. `jadx` writing `(unknown)`/empty method bodies means it failed,
 not that the method is empty.
 
+### A tool that ran out of room did not tell you the target is empty
+
+Every JVM-based reader in this list, and several of the native ones, can die on a large or deeply
+nested input without saying anything about the artifact: `OutOfMemoryError`, a `Killed` from the OOM
+killer, a container limit, or a timeout. The output looks like a tool that read the file and found
+nothing — an empty result plus a line most people skim past.
+
+**What a failed analysis supports is a claim about the analysis, not the artifact**: "this route could
+not complete on this input" is `present but unreadable` (`SKILL.md` §Coverage), and it is exactly
+where a wrong "that class is not in there" gets written into a record. Three things to do before a
+negative from a heavy tool becomes a finding:
+
+- read the **exit code and stderr**, not just stdout — a heap death often exits non-zero with a
+  partial result already printed;
+- give the tool the room the input warrants (a larger heap for the JVM readers) and re-run before
+  concluding anything;
+- prefer a route that does not have to materialise everything: an indexed query against the APK
+  (`rasc`/`droidasc`/`dexsql`) answers most location questions without decompiling a single class, and
+  it is also the route that survives a target too large for a full export.
+
+The same reading applies to a **time budget** you set yourself: a command you killed at your own
+deadline reported nothing about the target, only about your deadline.
+
 **`smali` assembling can abort silently** — the tree produces no dex while the process still exits
 0. Never treat exit code as proof of a build. Assert the artifact exists, is fresh, and is non-empty
 (`patch-audit.md`).

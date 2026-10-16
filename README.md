@@ -505,8 +505,15 @@ set APKREV_TOOLS=<dir>;<dir>                     # Windows, e.g. an SDK or proje
 export APKREV_TOOLS=<dir>:<dir>                  # POSIX
 ```
 
-The scripts themselves are plain `python3` and are intended to work identically on Windows, macOS and
+The scripts themselves are plain `python3` and are designed to work identically on Windows, macOS and
 Linux; where a snippet is POSIX-only it is labelled. Nothing here assumes a Unix shell.
+
+**Measured on Windows only.** Every gate run, every test result and every figure in the evidence
+record comes from one host (Windows 10.0.26100, PowerShell 7, CPython 3.14). Cross-platform behaviour
+is a design intention, not an observation: treat another platform as `unverified` until the suite has
+been run there, and expect the usual suspects to be the difference — path separators, `os.pathsep` in
+`APKREV_TOOLS`, console encodings, and shell quoting in the ADB helpers. If you run the gates on
+macOS or Linux and they pass, that is a `observed` result worth recording next to this paragraph.
 
 | Tool | Used for |
 |---|---|
