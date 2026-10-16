@@ -58,7 +58,8 @@ clean log is not one of them. Anything short of all six is a checkpoint, and sho
 checkpoint with what remains.
 
 **What the split costs is not measured, and the claim should not be overstated.** `SKILL.md` loads in
-full; a reference loads when the symptom index or `references/routing.md` sends you to one. That is
+full; a reference loads when the symptom index or the routing table
+(`skills/apk-reverse/references/routing.md`) sends you to one. That is
 usually described as "cheaper context", and only half of it has been measured here: the always-loaded
 body has a measured size and a gate that fails when it grows (`check_budget.py`). The other half has
 not — how many references a real question pulls in, and whether fetching them one at a time ends up
