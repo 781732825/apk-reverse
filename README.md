@@ -598,6 +598,11 @@ Four qualifications that the Coverage section states in full and that belong her
 
 ## Repository maintenance
 
+**Changing something here? Start with [CONTRIBUTING.md](CONTRIBUTING.md).** It lists the gates, what a
+green run does and does not establish, the sync rules a change has to keep (a new reference must be
+named in the inventory, renaming a heading breaks every section reference that pointed at it), and the
+two failure modes to watch for when editing the gates themselves.
+
 Four tools live at the root and are not part of the installed skill:
 
 ```
@@ -625,6 +630,41 @@ build_scripts.py   audit for machine-specific leftovers (absolute paths, credent
 Consistency has a natural counter-pressure -- a broken path fails loudly, and someone fixes it.
 Bloat has none, which is why the third tool exists: every pass adds a reference, an index row and
 a coverage claim, and without a measurement nothing in the repository notices.
+
+### What a green gate establishes, and what it does not
+
+The checks above prove **consistency**, not truth. `check_repo.py`, `check_refs.py`,
+`check_routing.py`, `check_commands.py` and `check_budget.py` passing means paths resolve, the
+inventory is complete, documented flags exist, the entry point has not crept, and no target
+identity reached the tracked surface. They say nothing about whether a *claim* is right: a
+reference can cite a heading that exists and still describe a mechanism nobody ran, and a budget
+gate cannot tell a load-bearing file from an adjacent one. Those are the two questions a reader
+actually has, and the only things that answer them are the strength labels and the evidence record.
+
+### Integrating an outside contribution
+
+**Fail closed.** If the contribution's fit with what this repository claims to cover, its
+side effects, or the verification needed to establish either one is **materially unresolved**, do
+not merge it and do not ship it: leave it pending, narrow it, or decline it. Recording the open
+question is a valid outcome; converting it into "none" or "probably fine" is not.
+
+Four things that are not approval, however good they look: **a green CI run, a finished
+implementation, upstream popularity, and the absence of an objection.** They establish that code
+runs and that nobody has complained, which is a different statement from *this belongs here and its
+limits are known*.
+
+Two consequences that decide most of these cases:
+
+- **Labels over volume.** A large contribution whose every claim carries a correct `observed` /
+  `inferred` / `unverified` / `unknown` label is easier to accept than a small one that presents
+  assumptions as findings, because the first one can be checked. Ask what was actually run, and
+  treat "no claim was upgraded to `observed` by reading about it" as a good sign rather than a
+  weakness.
+- **Unresolved is `unknown`, never absent.** A capability that has not been exercised here is
+  `unknown` -- not excluded, not disqualified, and also not merged on the assumption that it
+  probably works. Where a contribution ships a device-bound or toolchain-bound half, the mergeable
+  part is the half that was measured plus an explicitly labelled template for the rest, with the
+  gate that says what would have to exist for the other half to become `observed`.
 
 `tests/benchmark.md` holds the **regression matrix**: dimension -> public target -> the scripts the
 row exercises -> measured result -> strength label. It is the checklist to re-run before trusting

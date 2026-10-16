@@ -18,10 +18,24 @@ what was and was not exercised. Load it when a claim's strength decides whether 
 - **inferred** — follows from documented mechanism or from a neighbouring measurement; the step
   itself was not executed.
 - **unverified** — assumed, or reported by someone else, and not reproduced in this repository.
+- **unknown** — nothing here covers it: the question was never probed, or the probe's coverage did
+  not reach it. This is missing coverage, not a negative result.
 
 Reserve `observed` strictly (`references/long-task-discipline.md` does). "I reasoned it out" is
 `inferred`. The distinction is load-bearing, not cosmetic: an `inferred` route may still be right,
 but nobody here has paid for the counters yet.
+
+**Read a negative result as `unknown` unless the probe's coverage is established, and check for the
+third state first.** An empty result has three possible causes and only one of them is a finding:
+**absent** (coverage reached the question, nothing is there), **present but unreadable** (the thing is
+there, and this route cannot read it), or **`unknown`** (nothing covered it). The second is the one
+that costs hours, because it is indistinguishable from the first and it is the *normal* case on
+hardened input: "the string was not in the dex", "the hook never fired", "no request reached the
+endpoint" each have a failure mode that produces the same empty output as a true negative — a query
+whose argument never arrived intact, a hook installed after the check that matters, a request refused
+before it was built. A small class count on a packed target is the payload being unreadable, not
+absent. Name the probe's coverage, run a control that must hit, and write `unknown` about the probe
+rather than `absent` about the target.
 
 ## Covered, by verified mechanisms — the evidence
 

@@ -15,6 +15,8 @@ take. Silence in this list is not support for a route; it means nobody here paid
 - **inferred** — follows from a documented mechanism or a neighbouring measurement; the step itself
   was not executed.
 - **unverified** — assumed, or reported by someone else, and not reproduced in this record.
+- **unknown** — nothing here covers it: not probed, or probed without the coverage to answer. Missing
+  evidence, not a negative result.
 
 A row whose strength is `unverified` is a statement about *this skill's evidence*, not about the
 mechanism's truth. It means nobody has yet put a command and its output behind it here.

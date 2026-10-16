@@ -122,6 +122,24 @@ pair was built to ask:
 same window, one-bit difference. A diff across two builds is noise with a confident
 rendering.
 
+**A divergence is a location, not a cause.** Everything §4 produces is a positional claim: *these
+blocks execute only when input A is present*. That is already valuable, and it is routinely read as
+more than it is. Three upgrades it does **not** authorise on its own:
+
+- **"this block validates the credential"** — it may be a downstream consequence of a decision taken
+  earlier; the first divergence is the honest candidate for the decision, and even that is a
+  candidate.
+- **"patching this block flips the outcome"** — untested until the patch exists and both inputs have
+  been run through it (R2, single variable, with the unpatched run as control).
+- **"the blocks that matched are irrelevant"** — untested until a control run shows they stay matched
+  when the outcome changes.
+
+What promotes a candidate to a cause: step 5's swapped-input repeat, or a patch that moves the
+outcome and a control that does not. Until one of those has run, the finding to write down is "the
+first divergence is at X" — a place, with the evidence that it is input-dependent — and not "X is
+what decides this". The distinction is the same one `verification.md` draws between *the mechanism
+is proven* and *the behaviour changed*.
+
 ## 5. What the obfuscator actually built — read from two open implementations
 
 The differential reads better when you know what the two families actually emit. The facts

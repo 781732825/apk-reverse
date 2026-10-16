@@ -127,6 +127,22 @@ parse-and-build path is already 0.12 s on this archive. Treat the cache as a way
 across many queries in a long session, not as a speed switch; on small archives it is a net loss
 (cache read 0.071 s against a 0.042 s direct query on the 38.7 MB sample).
 
+**A cache is second-hand evidence, and it ages silently.** The cache keys on the artifact it recorded,
+and a stale cache answers for the **old** file with no error: query a rebuilt APK through yesterday's
+`cache.dxc2` and every count, string and caller list describes the previous build. Two consequences
+worth acting on:
+
+- **The cache file is a separate object from the source.** "I queried this APK" is a claim you have to
+  keep true yourself, the same way `repack-and-sign.md` requires the on-device hash before any later
+  measurement means anything. Record the source path **and its hash** next to the cache, and rebuild
+  after the artifact changes.
+- **`--trusted-input` skips revalidating the cache's recorded source inputs.** It exists for a
+  controlled build pipeline, and reaching for it to make a suspicious artifact load converts a stale
+  answer into an apparently fresh one. Do not use it on a target you are still investigating.
+
+Scope the claim accordingly: a cached run supports "this was true of the artifact the cache was built
+from", not "this is true of the artifact in front of me".
+
 **Read-only is enforced, and the error surface is uniform.** Missing class → `Error: not_found:
 selected file, method, or class not found`, exit 1. Missing input, a non-dex input, an unknown column,
 an unknown relation and a `DELETE` all exit 1 with a named cause; the write is refused.

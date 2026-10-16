@@ -1405,3 +1405,35 @@ data is still plaintext** — a JNI boundary beats a TLS interior every time. Ea
 the next layer: TLS-blind says "own crypto", dex-empty says "JS/native bundle", and the
 RegisterNative inventory turns "somewhere in libfoo" into a function address. *(Absorbed from a
 public write-up, 2026-09.)*
+
+## P47. Two tools disagree about the same artifact, and the disagreement is your parser
+
+**Symptom**
+Two indexers report different class counts for one APK: one says 647, the other says 38. Both exit
+cleanly, both print plausible output, and the smaller number has an innocent explanation ready to
+hand — a hardened target really does expose few classes — so the discrepancy is filed as "the tools
+disagree on packed input" and the investigation moves on with a wrong number in the record.
+
+**Root cause**
+One extraction rule was reused across outputs that do not share a format. Two defects in one pass:
+an unescaped metacharacter in the pattern (`$` inside a class descriptor is an end-of-line anchor, so
+every name containing `$` or a non-ASCII character was dropped), and two different representations
+compared as if they were one (a tool printing dotted Java names against a tool printing DEX
+descriptors, so one side parsed to nothing). Neither is a property of the tools. The measurement was
+reporting the parser's blind spot and attributing it to the artifact.
+
+**Why it is hard to see**
+Cross-checking tools is what this skill tells you to do, and the comfortable failure is the one that
+*confirms* something you already expect: a packed APK returning few classes is true, so the wrong
+number passes the one sanity check you were most likely to run. Both sides also produced output of
+the right *shape*, which reads as agreement.
+
+**The rule**
+**A count disagreement between two tools is a claim about your parser until you have proved
+otherwise.** Parse each tool's own output with a parser written for that format, normalise both to
+one representation, and only then compare — and let the comparison carry its own control: a query
+whose answer you already know, pushed through the same path, before any "the tools disagree" verdict
+is recorded. Two traps recur: regex metacharacters that are legal characters in the data (`$` in
+descriptors, `[` in array types, `.` in package names), and representation mismatches that hide
+behind a matching line count. The encoding cousins of this failure are in `framework-runtimes.md`
+and the line-ending trap in `patch-audit.md`.

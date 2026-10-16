@@ -11,7 +11,8 @@
   "strength_labels": {
     "observed": "A command was run and its output exists behind the claim.",
     "inferred": "Follows from a documented mechanism or a neighbouring measurement; the step itself was not executed.",
-    "unverified": "Assumed, or reported by someone else, and not reproduced in this record."
+    "unverified": "Assumed, or reported by someone else, and not reproduced in this record.",
+    "unknown": "Nothing here covers it: not probed, or probed without the coverage to answer. Missing evidence, never a negative result -- do not read an `unknown` row as 'absent' or 'safe'."
   },
   "evidence_rules": [
     "Every path in `evidence` is relative to the installed skill root and resolves in an installed copy.",

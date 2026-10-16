@@ -8,7 +8,7 @@ metadata:
   capability_registry: skills/apk-reverse/scripts/capabilities.py
   evidence_summary: skills/apk-reverse/references/evidence-summary.md
   last_reconstruction_pass: "2026-09-22"
-  strength_labels: "observed | inferred | unverified"
+  strength_labels: "observed | inferred | unverified | unknown"
 ---
 
 # APK Reverse Engineering & Patching
@@ -102,13 +102,31 @@ that almost fits is more dangerous than no method at all, because it arrives wit
 vocabulary and a set of reassuring numbers.
 
 **How strong these claims are — this is load-bearing, not cosmetic.** Every claim in this skill carries
-one of three labels, and you must label your own results the same way:
+one of four labels, and you must label your own results the same way:
 
 | Label | Means | May it justify a decision? |
 |---|---|---|
 | `observed` | a command was run and its output exists | yes |
 | `inferred` | follows from an observation, but the step is reasoned | provisionally |
 | `unverified` | assumed, or reported elsewhere and never reproduced here | only as something to test |
+| `unknown` | nothing here covers it: no probe ran, or the probe's coverage did not reach it | no — and never as absence |
+
+**A negative result has three shapes, and folding them together is the failure this section exists
+for.** `unverified` means somebody asserted something and nobody here paid for the counters; `unknown`
+means no evidence was gathered at all. But a probe that *did* run and came back empty means one of two
+different things, and only one of them is a finding:
+
+- **absent** — the probe's coverage reached the question and the thing genuinely is not there;
+- **present but unreadable** — the thing is there and *this route* cannot read it: an encrypted payload
+  inside a shell, a library the running ABI never loads, a check that fires before your hooks exist, a
+  field that exists under a type your parser rejects.
+
+The second is the dangerous one, because it produces byte-identical output to the first and it is the
+**normal** case on the hardened targets this skill is aimed at. A packed APK returning four classes is
+not an APK with four classes. So before "not present" goes into the record, name the probe that covered
+the question and run a control that must hit. If the control is silent too, the honest statement is
+`unknown` about **your probe**, not `absent` about the target — and the next move is a different probe,
+not a stronger conclusion.
 
 **The inventory that replaces a guess:** the per-route list of what is covered and what is not — by
 verified mechanism versus by documented-but-mostly-inferred route — is in
@@ -390,7 +408,7 @@ These are moments where continuing to push forward is the wrong move. Each has c
 | **Neutralise a native terminate path by returning, never by making it not return** | a spin stub freezes the caller **holding its lock**; unrelated threads wedge and the symptom (hang, external kill, restart loop) looks nothing like the cause, with no crash record | return a benign value, prefer success (`0`) over failure (`-1`), never touch `pthread_exit`/`exit`/`abort`/`snprintf`/`closedir`. `native-tamper-and-suicide.md` |
 | **Look before you conclude, and look while you wait** | a screen that is actually looked at answers in one step what coordinate-guessing cannot answer in five | capture **and inspect**; byte-identical samples mean nothing will change. `scripts/snap.py`, `environment.md` §look at the screen |
 | **Bound every command, and calibrate the bound from a measurement** | an unbounded call turns a stall into "still working", which is indistinguishable from progress | time the operation once, record it, derive the deadline from it. `long-task-discipline.md` §Bound every wait |
-| **Every claim carries a label — `observed`, `inferred` or `unverified`** | "probably", "should be" and "in theory" are not findings, and an unlabelled guess propagates as a fact | `observed` requires a command **and its output**; nothing else may be written as established |
+| **Every claim carries a label — `observed`, `inferred`, `unverified` or `unknown`** | "probably", "should be" and "in theory" are not findings, and an unlabelled guess propagates as a fact | `observed` requires a command **and its output**; nothing else may be written as established. A probe that did not reach the question is `unknown`, never `absent` |
 | **"Done" means the user-visible outcome** | a blocking dialog still on screen means the task is not done, however clean the log is | §What "done" means, all six items; absence of a log line is never evidence of success |
 | **Never discard a route on compound evidence** | if a failure followed two simultaneous changes, the attribution is a hypothesis — mis-attributed failures have removed viable routes for hours | re-run the abandonment single-variable before writing it down |
 | **Prove the device changed before measuring anything** | install success describes the *request*, not the app on disk | hash the on-device artifact against your build; otherwise every later observation describes the previous build |
