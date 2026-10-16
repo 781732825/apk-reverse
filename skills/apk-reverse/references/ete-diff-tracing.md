@@ -148,17 +148,32 @@ order and a randomized svc immediate** (source-read): byte signatures cannot sur
 randomization, but ETE's branch stream and `svc_scan.py`'s semantic site-location do not
 care — locate the check by what it *is*, never by its bytes.
 
-**xvmp (IR-level virtualizer, same repo)**: each virtualized function becomes a stub calling
+**xvmp (IR-level virtualizer, same repo — and a half-finished one)**: the *compiler side*
+is what that repository actually contains: each rewritten function becomes a stub calling
 `vm_exec(code, size, vm_args, num)` — bytecode bytes plus a boxed-argument array in the
 module; 11 one-byte opcodes with inline-const/slot operands and 19 arithmetic sub-ops;
-pointer constants materialize through a generated const/call dispatch at first use. For the
-tracing routes this means: the interpreter is one dominant loop (the §4 handler reading),
-the **guest inputs are observable at the `vm_args` array before interpretation starts** (a
-watchpoint there sees arguments and any key material, plaintext, whatever the bytecode
-carries), and each constant's bits pass through the materialization dispatch as a returned
-i64 — a second, cheap observation point. `scripts/vm_handler_slice.py` consumes the trace
-side and documents the handler->opcode map you can build against a *known* table like this
-one.
+pointer constants materialize through a generated const/call dispatch at first use. The
+**runtime interpreter is not in the repository**: `getOrCreateVMExec` emits only a weak
+definition-less stub (`CreateStubIfMissing`), exception paths are commented out, and
+unsupported IR is skipped with an `errs()` line and no failure — so a binary built from that
+tree as-is links fine and falls into the empty stub at runtime. (Observed by a reader of the
+tree, 2026-10; the companion write-up describes a *different, earlier prototype — 32-bit
+fixed-width ISA, thunk bridges, an LVMP container — so trust the code, not the article.)
+Consequences for the tracing routes, **conditional on a real `vm_exec` being supplied as a
+strong symbol**: the interpreter is one dominant loop (the §4 handler reading), the **guest
+inputs are observable at the `vm_args` array before interpretation starts** (a watchpoint
+there sees the *guest arguments* — key material or plaintext only when they arrive through
+those arguments; constants carried in the bytecode are not among them), and
+each constant's bits pass through the materialization dispatch as a returned i64 — a second,
+cheap observation point. This repository supplies that missing half: pass wiring, FORMAT v3 bytecode (explicit
+load/store widths, stable cast kinds, per-index GEP byte scales), a strong-symbol `vm_exec`
+interpreter and a `VMP.h` user header — merged into all four `omp` branches of that tree
+and verified end-to-end (virtualized vs native identical at -O0/-O1/-O2). When building a
+fixture from it: link `runtime/vm_exec.c`, set `VMP_TRACE=1` for a per-step interpreter
+trace, and **read stderr for `[irvm] skip` lines** — a silently skipped function still
+exists natively and will quietly skew a trace pair.
+`scripts/vm_handler_slice.py` consumes the trace side and documents the handler->opcode map
+you can build against a *known* table like this one.
 
 ## 6. Failure modes
 

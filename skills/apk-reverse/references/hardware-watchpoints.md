@@ -147,6 +147,15 @@ large structs need either the one field that matters or several slots.
   right, not the encodings.
 - **Root, and only root.** `ptrace` of an app process from the shell needs `su`; the helper
   checks and says so.
+- **Go targets: match the read to the hit function's ABI (pitfalls.md P43).** Modern Go
+  (`ABIInternal`: 1.17+ on amd64, 1.18+ on arm64 — most gomobile builds today) passes the
+  first arguments in registers, so they are already in the dump. Only **stack-ABI** functions
+  (pre-register-ABI builds, hand-written assembly `ABI0`) keep arguments on the **stack**;
+  then a hit on the right function still dumps registers that do not contain the buffer
+  pointer you came for. The fix is not another
+  instruction — it is reading `[sp .. sp+0x100]` at the stop (the helper prints `sp` on every
+  `HIT` for exactly this reason), or moving up to a boundary that follows the AArch64 PCS
+  (a `RegisterNative` JNI entry: strings arrive in `x2..x5`).
 - **Detach cleanly or leave the target traced forever**: slots cleared, every tid detached.
   The helper does this on every exit path including the caps; a `kill -9` of the helper
   leaves `PTRACE_O_EXITKILL` to do the damage — do not do that.

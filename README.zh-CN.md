@@ -215,6 +215,11 @@ references/               按需加载，每个文件一个主题
                               栈不可信时的崩溃取证（BRBE 分支记录 / ETE 尾部），
                               以及把运行时地址变成符号与静态偏移
                               （`trace_addr2sym.py`，PIE vaddr/文件偏移规则）
+  native-vm-recovery.md       native VM 还原：VM 存在信号、区分叠在一起的 CFF/VM 双层
+                              dispatcher 的行为判据表、用 relocation 恢复分发表、三重
+                              验证的寄存器锚定、嵌套 VM 的段栈、从 STORE 反向切片加
+                              字节道的操作数恢复，以及干净重实现 VM 的验证闭环 —— 吸收自
+                              两篇公开实战文
   kernel-event-injection.md   把驱动当伸进目标里的手：从内核布置、无 tracer 关系的
                               观察点、陷阱处的寄存器改写、按路线（KPM/LKM/eBPF/
                               Zygisk）的能力对照表，以及把这一层与另外两层叠加的
@@ -362,7 +367,8 @@ scripts/                  参数化、与路径无关
                               或裸地址列表；用真实交叉编译的 aarch64 .so 验证过
   vm_handler_slice.py         把解释器轨迹去虚拟化：dispatcher 识别、按分发入口切成
                               handler 段、签名聚类，以及通过可选 handler→opcode 映射
-                              得到的 guest opcode 轨迹 —— 按开源 xvmp IR 虚拟机校准
+                              得到的 guest opcode 轨迹 —— 按开源 xvmp IR 虚拟机校准，
+                              并带 VM 嵌套调用的循环诊断
   rasc_build.py               构建并验证 rasc，即 ASC 索引器的 Rust 重实现：
                               --check 检查已有什么、--build 克隆并 cargo、--verify 用
                               droidasc 校验一个 APK，并在任何类集合差异上失败

@@ -92,8 +92,10 @@ before distrusting a symbol.
   recover the real path into a flattened function that crashes — the state machine's taken
   states, read from hardware, no unwinder.
 - **VMP/xvmp-class**: SPE answers "which handler sequence touches the argument slots" when
-  the bytecode is opaque (`vm_exec`'s boxed arguments live in a plain array —
-  `scripts/vm_handler_slice.py`'s header records where); a crash inside the interpreter
+  the bytecode is opaque (a generator-produced `vm_exec`'s boxed arguments live in a plain
+  array — `scripts/vm_handler_slice.py`'s header records where; the public xvmp tree ships
+  the compiler side only, so this presumes a working interpreter linked in — see
+  `references/ete-diff-tracing.md` §5); a crash inside the interpreter
   keeps its branch records, so the fatal guest opcode is identifiable from the last
   handler segment.
 - **Anti-debug/anti-hook inserts**: a deliberate `svc`-based check (the Hikari-family
